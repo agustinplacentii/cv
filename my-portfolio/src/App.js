@@ -5,14 +5,16 @@ import Experience from './components/Experience';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import { useThemeStore } from './components/themeStore';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, Container, IconButton, Box } from '@mui/material';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 function App() {
   const dark = useThemeStore(state => state.dark);
   const toggleDark = useThemeStore(state => state.toggleDark);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     if (dark) {
@@ -24,12 +26,28 @@ function App() {
     }
   }, [dark]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY || window.pageYOffset;
+      const windowHeight = window.innerHeight;
+      const docHeight = document.documentElement.scrollHeight;
+      // Mostrar el botón si el usuario está cerca del fondo (a 100px del final)
+      setShowScrollTop(scrollY + windowHeight >= docHeight - 100);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Scroll suave a la sección
   const handleNavigate = (sectionId) => {
     const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const theme = createTheme({
@@ -68,6 +86,23 @@ function App() {
             <Contact />
           </main>
           <Footer />
+          {showScrollTop && (
+            <Box sx={{ position: 'fixed', bottom: 32, right: 32, zIndex: 2000 }}>
+              <IconButton
+                color="primary"
+                size="large"
+                onClick={handleScrollToTop}
+                sx={{
+                  backgroundColor: 'background.paper',
+                  boxShadow: 3,
+                  '&:hover': { backgroundColor: 'primary.main', color: 'white' },
+                  transition: 'all 0.3s',
+                }}
+              >
+                <KeyboardArrowUpIcon fontSize="inherit" />
+              </IconButton>
+            </Box>
+          )}
         </Container>
       </Box>
     </ThemeProvider>
